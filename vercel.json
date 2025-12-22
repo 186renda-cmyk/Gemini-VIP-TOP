@@ -1,0 +1,33 @@
+{
+  "redirects": [
+    {
+      "source": "/go/account",
+      "destination": "https://www.naifeistation.com/index/buy?id=263&invite=3903",
+      "statusCode": 302
+    },
+    {
+      "source": "/go/charging",
+      "destination": "https://www.naifeistation.com/index/buy?id=265&invite=3903",
+      "statusCode": 302
+    },
+    {
+      "source": "/go/support",
+      "destination": "https://www.naifeistation.com/i/Satqr",
+      "permanent": false
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)\.(css|js|svg|png|jpg|jpeg|webp|ico|woff2)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    }
+  ]
+}
