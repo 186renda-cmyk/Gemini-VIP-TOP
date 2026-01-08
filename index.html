@@ -31,61 +31,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
-  <style>
-    html {
-      scroll-behavior: smooth; /* 仅在点击锚点跳转时平滑，平时滚动由系统接管 */
-    }
-    /* 优化渲染性能，防止丢帧 */
-    body {
-      -webkit-font-smoothing: antialiased;
-    }
-    body { font-family: 'Inter', sans-serif; }
-    .gemini-bg {
-      background-color: #020617;
-      background-image:
-        radial-gradient(circle at 15% 50%, rgba(76, 29, 149, 0.18), transparent 25%),
-        radial-gradient(circle at 85% 30%, rgba(37, 99, 235, 0.18), transparent 25%);
-    }
-    .glass-card { background: rgba(255,255,255,0.04); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); }
-    .glass-card:hover { border-color: rgba(168,85,247,0.4); box-shadow: 0 10px 40px -10px rgba(168,85,247,0.25); }
-    .animate-gradient-x { background-size: 200% 200%; animation: gradient-x 6s ease infinite; }
-    @keyframes gradient-x { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-    .bg-noise { background-image: url('https://grainy-gradients.vercel.app/noise.svg'); opacity: 0.05; }
-    .animate-float-slow { animation: float 8s ease-in-out infinite; }
-    .animate-pulse-slow { animation: pulse 6s ease-in-out infinite; }
-
-    /* 🌟 电影级渐入：模糊 + 缩放 + 上浮 */
-    .reveal-hero {
-      opacity: 0;
-      filter: blur(20px);
-      transform: scale(0.9) translateY(40px);
-      transition: all 1.4s cubic-bezier(0.16, 1, 0.3, 1); /* Apple 风格极度丝滑缓动 */
-      will-change: transform, opacity, filter;
-    }
-    
-    /* 普通元素渐入 */
-    .reveal {
-      opacity: 0;
-      filter: blur(8px); /* 关键：加一点模糊 */
-      transform: translateY(30px) scale(0.98);
-      transition: all 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-      will-change: transform, opacity, filter;
-    }
-
-    /* 激活状态 */
-    .reveal.active, .reveal-hero.active {
-      opacity: 1;
-      filter: blur(0);
-      transform: translateY(0) scale(1);
-    }
-
-    /* 💡 错落延时 (Stagger)：让元素排队出来，不要一起出来 */
-    .delay-100 { transition-delay: 0.1s; }
-    .delay-200 { transition-delay: 0.2s; }
-    .delay-300 { transition-delay: 0.3s; }
-    
-    /* Lenis 优化 - 已移除 */
-  </style>
+  <!-- CSS styles moved to style.css -->
 
   <script type="application/ld+json">
   {
@@ -356,12 +302,7 @@
       </div>
     </div>
 
-    <style>
-      @keyframes float {
-        0%, 100% { transform: translateY(0px) rotate(3deg); }
-        50% { transform: translateY(-20px) rotate(3deg); }
-      }
-    </style>
+  <!-- Keyframes moved to style.css -->
   </header>
 
   <!-- Pricing directly under Hero -->
