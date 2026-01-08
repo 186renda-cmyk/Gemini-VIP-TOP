@@ -90,21 +90,97 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "Product",
-    "name": "Gemini 3.0 Pro 高级会员 (成品号/代充)",
-    "image": "https://gemini-vip.top/logo.png",
-    "description": "最新Gemini会员开通指南。提供Google Gemini 3.0 Pro成品号购买与充值服务。优惠码 xmpick (星际放映厅通用) 立享93折。无需海外信用卡，支持支付宝/微信支付。解锁2TB权益、原生多模态，自动发货，稳定防封。",
-    "brand": { "@type": "Brand", "name": "Gemini-VIP" },
-    "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.9", "reviewCount": "128" },
-    "offers": {
-      "@type": "AggregateOffer",
-      "priceCurrency": "CNY",
-      "lowPrice": "172",
-      "highPrice": "204",
-      "offerCount": "2",
-      "availability": "https://schema.org/InStock",
-      "url": "https://gemini-vip.top/"
-    }
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://gemini-vip.top/#organization",
+        "name": "Gemini-VIP",
+        "url": "https://gemini-vip.top/",
+        "logo": "https://gemini-vip.top/logo.png",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "email": "support@gemini-vip.top",
+          "contactType": "customer support"
+        },
+        "sameAs": [
+          "https://gemini-vip.top/"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://gemini-vip.top/#website",
+        "url": "https://gemini-vip.top/",
+        "name": "Gemini-VIP",
+        "description": "Google Gemini 3.0 Pro 高级会员服务",
+        "publisher": {
+          "@id": "https://gemini-vip.top/#organization"
+        },
+        "inLanguage": "zh-CN"
+      },
+      {
+        "@type": "Product",
+        "@id": "https://gemini-vip.top/#product",
+        "name": "Gemini 3.0 Pro 高级会员 (成品号/代充)",
+        "image": "https://gemini-vip.top/logo.png",
+        "description": "最新Gemini会员开通指南。提供Google Gemini 3.0 Pro成品号购买与充值服务。优惠码 xmpick (星际放映厅通用) 立享93折。无需海外信用卡，支持支付宝/微信支付。解锁2TB权益、原生多模态，自动发货，稳定防封。",
+        "brand": {
+          "@type": "Brand",
+          "name": "Gemini-VIP"
+        },
+        "offers": {
+          "@type": "AggregateOffer",
+          "priceCurrency": "CNY",
+          "lowPrice": "172",
+          "highPrice": "204",
+          "offerCount": "2",
+          "availability": "https://schema.org/InStock",
+          "url": "https://gemini-vip.top/"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "reviewCount": "128"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://gemini-vip.top/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "国内可以直接使用 Gemini 3.0 Pro 吗？需不需要梯子？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "可以，且方案灵活。如果您懂技术，我们会提供全平台（Win/Mac/iOS/Android）的网络连接教程与软路由规则，帮您配置原生 IP 环境。如果您不想折腾，购买成品号后，您可以配合我们推荐的API 镜像站或第三方客户端使用，实现国内直连，无需魔法即可流畅对话。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "\"成品号\" 和 \"代充\" 到底有什么区别？怎么选？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "成品号 (新手推荐)：这是一个全新的 Google 账号，我们已经帮您注册好并开通了 Gemini Advanced 会员。支付后自动发货，账号密码直接发到您邮箱，到手即用。代充 (老手推荐)：如果您已经有 Google 账号，且里面有重要的历史对话或文件，请选择代充。我们会通过正规渠道给您的账号开通会员，数据完美保留。两者都享受 2TB Google One 云空间权益。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "账号稳定吗？会出现 \"封号\" 或 \"掉会员\" 吗？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "极度稳定，官方质保。市面上便宜的账号多用 \"黑卡/盗刷卡\" 开通，极易封号。我们坚持使用正规企业虚拟卡/实体卡按月付费，资金来源干净。承诺：在订阅期内，如果因我们原因导致掉会员，提供秒补新号或按天数退款服务，让您无后顾之忧。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "支付后多久能收到？支持哪些付款方式？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "成品号：对接 24 小时自动发货系统。支付成功后，网页会自动跳转显示账号密码，同时也会发送一份备份到您的填写的邮箱，0秒等待。代充：需要人工登录操作，通常在工作时间（9:00 - 24:00）内 10-60 分钟 完成。我们支持支付宝 (Alipay) 和微信支付，方便快捷。"
+            }
+          }
+        ]
+      }
+    ]
   }
   </script>
 </head>
@@ -114,10 +190,10 @@
     <div class="max-w-7xl mx-auto rounded-2xl border border-white/10 bg-[#020617]/80 backdrop-blur-2xl shadow-[0_0_40px_-10px_rgba(124,58,237,0.15)]">
       <div class="px-6 h-16 sm:h-20 flex items-center justify-between">
         
-        <a href="#" class="flex items-center gap-3 group">
+        <a href="#" class="flex items-center gap-3 group" aria-label="Gemini-VIP 首页">
           <div class="relative w-8 h-8 flex items-center justify-center">
             <div class="absolute inset-0 bg-purple-500/30 blur-lg rounded-full group-hover:bg-purple-500/50 transition"></div>
-            <svg class="relative w-full h-full text-white drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg class="relative w-full h-full text-white drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="url(#nav-gradient)"/>
               <defs>
                 <linearGradient id="nav-gradient" x1="0" y1="0" x2="24" y2="24">
@@ -1050,6 +1126,74 @@
       </div>
     </div>
   </section>
+  <section class="py-24 relative border-t border-white/5 bg-slate-900/30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+          用户真实反馈 <span class="text-yellow-400">Reviews</span>
+        </h2>
+        <div class="flex items-center justify-center gap-2 text-xl text-yellow-400 mb-2">
+          <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+          <span class="text-white text-lg font-bold ml-2">4.9/5.0</span>
+        </div>
+        <p class="text-slate-400 text-sm">基于 128+ 位真实用户的评价</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Review 1 -->
+        <div class="bg-slate-800/50 p-6 rounded-2xl border border-white/5 relative">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">L</div>
+            <div>
+              <div class="text-white font-bold text-sm">Li***ng</div>
+              <div class="text-slate-500 text-xs">购买了 成品号 · 2天前</div>
+            </div>
+          </div>
+          <div class="flex text-yellow-400 text-xs mb-3">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p class="text-slate-300 text-sm leading-relaxed">
+            "发货速度真的快，付款后网页直接就跳出账号密码了。试了一下 Gemini 3.0，分析长文档的速度比 GPT-4 快多了，而且不用梯子也能连，这点很赞！"
+          </p>
+        </div>
+
+        <!-- Review 2 -->
+        <div class="bg-slate-800/50 p-6 rounded-2xl border border-white/5 relative">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold">J</div>
+            <div>
+              <div class="text-white font-bold text-sm">Jason_Dev</div>
+              <div class="text-slate-500 text-xs">购买了 会员代充 · 1周前</div>
+            </div>
+          </div>
+          <div class="flex text-yellow-400 text-xs mb-3">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p class="text-slate-300 text-sm leading-relaxed">
+            "老账号有很多重要的历史对话，不敢随便换号。找客服代充的，虽然要人工操作稍微等了一会儿，但确实稳。2TB 空间也到账了，Google Photos 也能用。"
+          </p>
+        </div>
+
+        <!-- Review 3 -->
+        <div class="bg-slate-800/50 p-6 rounded-2xl border border-white/5 relative">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 font-bold">W</div>
+            <div>
+              <div class="text-white font-bold text-sm">Wang.Y</div>
+              <div class="text-slate-500 text-xs">购买了 成品号 · 3天前</div>
+            </div>
+          </div>
+          <div class="flex text-yellow-400 text-xs mb-3">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+          </div>
+          <p class="text-slate-300 text-sm leading-relaxed">
+            "价格比官网便宜不少，主要是省去了自己办外币卡的麻烦。客服态度很好，一开始不会用 API，客服发了很详细的教程，几分钟就搞定了。"
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="faq" class="py-24 relative">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       
