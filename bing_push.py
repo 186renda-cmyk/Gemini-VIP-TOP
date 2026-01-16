@@ -28,7 +28,10 @@ def get_all_urls():
             if file.endswith(".html"):
                 # Clean URL: remove .html
                 clean_file = file.replace(".html", "")
-                urls.append(f"https://{HOST}/blog/{clean_file}")
+                if clean_file == "index":
+                    urls.append(f"https://{HOST}/blog")
+                else:
+                    urls.append(f"https://{HOST}/blog/{clean_file}")
     
     return urls
 
