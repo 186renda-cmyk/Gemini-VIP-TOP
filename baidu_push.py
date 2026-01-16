@@ -36,7 +36,7 @@ def get_priority_urls():
         
         for _, file in files:
             if file == "index.html":
-                blog_urls.append(f"https://{HOST}/blog")
+                blog_urls.append(f"https://{HOST}/blog/")
             else:
                 # Clean URL: remove .html
                 clean_file = file.replace(".html", "")
