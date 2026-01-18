@@ -63,9 +63,16 @@ def get_post_metadata(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
     
-    # Title
-    title_match = re.search(r'<title>(.*?)</title>', content)
-    title = title_match.group(1).split(' - ')[0] if title_match else 'No Title'
+    # Title Priority: <h1> -> <title>
+    h1_match = re.search(r'<h1[^>]*>(.*?)</h1>', content, re.DOTALL)
+    if h1_match:
+        # Remove HTML tags from h1
+        title = re.sub(r'<[^>]+>', '', h1_match.group(1)).strip()
+        # Collapse multiple spaces
+        title = ' '.join(title.split())
+    else:
+        title_match = re.search(r'<title>(.*?)</title>', content)
+        title = title_match.group(1).split(' - ')[0] if title_match else 'No Title'
     
     # URL (Clean URL)
     filename = os.path.basename(filepath)
@@ -625,7 +632,7 @@ def scan_and_build_homepage(all_posts):
         rgba = SHADOW_MAP.get(color, '168,85,247')
         
         card_html = f'''
-        <article class="h-full">
+        <article class="h-full" data-category="{category}">
           <a class="group block h-full" href="{url}">
             <div class="bg-slate-900/50 border border-white/10 rounded-2xl overflow-hidden h-full hover:border-{color}-500/50 hover:shadow-[0_0_30px_rgba({rgba},0.15)] transition-all duration-300 flex flex-col">
               <div class="h-48 bg-slate-800 relative overflow-hidden">
