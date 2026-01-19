@@ -50,6 +50,7 @@ POST_CONFIG = {
     'benefits': {'color': 'red', 'icon': 'fa-gift', 'category': '会员权益'},
     'gemini-region-error-fix': {'color': 'slate', 'icon': 'fa-wrench', 'category': '故障排除'},
     'guide-cn': {'color': 'teal', 'icon': 'fa-language', 'category': '中文指南'},
+    'gemini-3-prompt-guide': {'color': 'purple', 'icon': 'fa-wand-magic-sparkles', 'category': 'Prompt教程'},
     'choose-model-cn': {'color': 'violet', 'icon': 'fa-robot', 'category': '模型选型'},
     'comparison': {'color': 'yellow', 'icon': 'fa-not-equal', 'category': '竞品对比'},
     'pro-vs-free': {'color': 'green', 'icon': 'fa-circle-half-stroke', 'category': '版本对比'}
@@ -687,9 +688,169 @@ def scan_and_build_homepage(all_posts):
             print("Could not find grid container in index.html to update.")
             return
 
+    # --- Update JSON-LD CollectionPage ---
+    print("Updating JSON-LD CollectionPage...")
+    json_items = []
+    for i, post in enumerate(sorted_posts, 1):
+        full_url = f"https://gemini-vip.top/blog/{post['url']}"
+        post_desc = post.get('summary', '')
+        if not post_desc:
+             post_desc = post['title']
+             
+        item = {
+            "@type": "ListItem",
+            "position": i,
+            "item": {
+                "@type": "BlogPosting",
+                "@id": full_url,
+                "url": full_url,
+                "name": post['title'],
+                "headline": post['title'],
+                "description": post_desc,
+                "datePublished": post.get('date', ''),
+                "author": {
+                    "@type": "Organization",
+                    "name": "Gemini-VIP"
+                },
+                "image": "https://gemini-vip.top/assets/logo.png"
+            }
+        }
+        json_items.append(item)
+    
+    collection_page_json = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "Gemini 教程与评测合集",
+        "description": "Google Gemini 相关教程、评测、指南聚合页",
+        "url": "https://gemini-vip.top/blog/",
+        "mainEntity": {
+            "@type": "ItemList",
+            "itemListElement": json_items
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Gemini-VIP",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://gemini-vip.top/assets/logo.png",
+                "width": 512,
+                "height": 512
+            }
+        }
+    }
+
+    new_script_block = f'<script type="application/ld+json">\n{json.dumps(collection_page_json, ensure_ascii=False, indent=2)}\n</script>'
+    
+    # Robust replacement of the entire CollectionPage script block
+    # Matches <script ...> ... "@type": "CollectionPage" ... </script>
+    pattern = r'<script type="application/ld\+json">\s*\{[\s\S]*?"@type":\s*"CollectionPage"[\s\S]*?\}\s*</script>'
+    
+    if re.search(pattern, new_content):
+        new_content = re.sub(pattern, lambda m: new_script_block, new_content, count=1)
+        print("Updated existing CollectionPage JSON-LD.")
+    else:
+        print("Warning: CollectionPage JSON-LD block not found. Inserting new one.")
+        if '</head>' in new_content:
+             new_content = new_content.replace('</head>', f'{new_script_block}\n</head>')
+    # --------------------------------------
+
     with open(index_file, 'w', encoding='utf-8') as f:
         f.write(new_content)
     print("Homepage built successfully from Meta Tags.")
+
+def update_root_homepage(all_posts):
+    print("Updating Root Homepage (index.html)...")
+    root_index_file = 'index.html'
+    
+    if not os.path.exists(root_index_file):
+        print("Missing root index.html")
+        return
+
+    # Sort and take top 6
+    sorted_posts = sorted(all_posts, key=lambda x: (x.get('card_sticky', 0), x.get('date', '1970-01-01')), reverse=True)[:6]
+    
+    grid_html = ''
+    for post in sorted_posts:
+        url = f"blog/{post['url']}" # Prepend blog/ for root index
+        title = post['title']
+        summary = post.get('summary', '')
+        if not summary:
+             summary = f"阅读关于 {title} 的详细内容。"
+             
+        category = post.get('card_category', '教程')
+        cat_icon = 'fa-book'
+        if '评测' in category: cat_icon = 'fa-chart-simple'
+        elif '指南' in category: cat_icon = 'fa-compass'
+        elif '优惠' in category or '羊毛' in category: cat_icon = 'fa-gift'
+        elif '故障' in category: cat_icon = 'fa-wrench'
+        
+        icon = post.get('card_icon', 'fa-star')
+        color = post.get('card_color', 'purple')
+        read_time = post.get('read_time', '3分钟阅读')
+        
+        secondary_color = GRADIENT_MAP.get(color, 'purple')
+        rgba = SHADOW_MAP.get(color, '168,85,247')
+        
+        card_html = f'''
+        <a class="group block h-full" href="{url}">
+          <div class="bg-slate-900/50 border border-white/10 rounded-2xl overflow-hidden h-full hover:border-{color}-500/50 hover:shadow-[0_0_30px_rgba({rgba},0.15)] transition-all duration-300 flex flex-col">
+            <div class="h-48 bg-slate-800 relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-{color}-600/20 via-slate-900/50 to-{secondary_color}-600/20 group-hover:scale-105 transition duration-700"></div>
+              <div class="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-50 transition">
+                <i class="fa-solid {icon} text-6xl text-{color}-400"></i>
+              </div>
+              <div class="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-[10px] text-white font-bold border border-white/10">
+                <i class="fa-solid {cat_icon} mr-1 text-{color}-400"></i> {category}
+              </div>
+            </div>
+            <div class="p-6 flex-1 flex flex-col">
+              <h3 class="text-xl font-bold text-white mb-3 group-hover:text-{color}-400 transition leading-snug">
+                {title}
+              </h3>
+              <p class="text-slate-400 text-sm line-clamp-3 mb-4 flex-1 leading-relaxed">
+                {summary}
+              </p>
+              <div class="text-slate-500 text-xs mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+                <span><i class="fa-regular fa-clock mr-1"></i> {read_time}</span>
+                <span class="text-{color}-400 group-hover:translate-x-1 transition">阅读全文 →</span>
+              </div>
+            </div>
+          </div>
+        </a>'''
+        grid_html += card_html
+
+    with open(root_index_file, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    soup = BeautifulSoup(content, 'html.parser')
+    
+    # Find the #blog section
+    blog_section = soup.find('section', id='blog')
+    if blog_section:
+        grid_div = blog_section.find('div', class_='grid grid-cols-1 md:grid-cols-3 gap-8')
+        if grid_div:
+            grid_div.clear()
+            if grid_html.strip():
+                # Use html.parser to parse the fragment
+                grid_soup = BeautifulSoup(f'<div>{grid_html}</div>', 'html.parser')
+                for child in list(grid_soup.div.contents):
+                    grid_div.append(child)
+            else:
+                print("Warning: root grid_html is empty!")
+            
+            new_content = str(soup)
+            # Fix soup prettify issues if any (BeautifulSoup might mess up some void tags or formatting, but usually okay for this)
+            # Just writing str(soup) is usually safer than prettify() for preserving scripts/styles
+            
+            with open(root_index_file, 'w', encoding='utf-8') as f:
+                f.write(new_content)
+            print("Root Homepage updated successfully.")
+        else:
+            print("Could not find grid container in root index.html")
+    else:
+        print("Could not find #blog section in root index.html")
+
+
 
 def main():
     print("Starting Build Process...")
@@ -719,6 +880,7 @@ def main():
             process_file(filepath, template_content, all_posts)
     
     scan_and_build_homepage(all_posts)
+    update_root_homepage(all_posts)
     
     update_indices()
 

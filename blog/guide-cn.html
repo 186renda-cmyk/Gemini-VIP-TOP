@@ -314,11 +314,11 @@
               <div class="text-slate-500 text-xs mt-1">推荐文章</div>
             </a>
             
-            <a href="gemini-version-guide" class="group block rounded-2xl bg-white/5 border border-white/10 p-4 hover:bg-white/10 transition">
-              <div class="h-28 rounded-xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 flex items-center justify-center text-blue-400 mb-3">
-                <i class="fa-solid fa-code-branch text-3xl"></i>
+            <a href="gemini-3-prompt-guide" class="group block rounded-2xl bg-white/5 border border-white/10 p-4 hover:bg-white/10 transition">
+              <div class="h-28 rounded-xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 flex items-center justify-center text-purple-400 mb-3">
+                <i class="fa-solid fa-wand-magic-sparkles text-3xl"></i>
               </div>
-              <div class="text-white font-bold text-sm line-clamp-2">Gemini 哪个版本最好用？ 3.0 Pro, Flash, 2.5 全面对比</div>
+              <div class="text-white font-bold text-sm line-clamp-2">Gemini 3 提示词最佳实践： 日常使用指南</div>
               <div class="text-slate-500 text-xs mt-1">推荐文章</div>
             </a>
             
@@ -362,9 +362,15 @@
                 </div>
 
                 <div class="flex gap-4 pt-2">
-                    <a class="w-8 h-8 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:bg-white/10 hover:text-white hover:border-white/20 transition" href="mailto:support@gemini-vip.top" aria-label="Email">
-                        <i class="fa-solid fa-envelope"></i>
-                    </a>
+                    <div class="relative group">
+                        <a class="w-8 h-8 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:bg-white/10 hover:text-white hover:border-white/20 transition duration-300" href="mailto:support@gemini-vip.top" aria-label="Email">
+                            <i class="fa-solid fa-envelope"></i>
+                        </a>
+                        <div class="absolute bottom-full left-0 mb-2 px-3 py-1.5 bg-slate-800 text-white text-xs font-mono rounded-lg border border-white/10 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 whitespace-nowrap z-20"> 
+                            support@gemini-vip.top 
+                            <div class="absolute top-full left-4 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-800"></div> 
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -422,6 +428,8 @@
             </div>
         </div>
     </div>
+    
+    
 </footer>
 <script>
     function copyCode(element) {
