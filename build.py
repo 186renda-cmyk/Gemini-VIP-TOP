@@ -51,6 +51,7 @@ POST_CONFIG = {
     'gemini-region-error-fix': {'color': 'slate', 'icon': 'fa-wrench', 'category': '故障排除'},
     'guide-cn': {'color': 'teal', 'icon': 'fa-language', 'category': '中文指南'},
     'gemini-3-prompt-guide': {'color': 'purple', 'icon': 'fa-wand-magic-sparkles', 'category': 'Prompt教程'},
+    'gemini-metaphysics-prompts': {'color': 'indigo', 'icon': 'fa-yin-yang', 'category': 'Prompt教程'},
     'choose-model-cn': {'color': 'violet', 'icon': 'fa-robot', 'category': '模型选型'},
     'comparison': {'color': 'yellow', 'icon': 'fa-not-equal', 'category': '竞品对比'},
     'pro-vs-free': {'color': 'green', 'icon': 'fa-circle-half-stroke', 'category': '版本对比'}
