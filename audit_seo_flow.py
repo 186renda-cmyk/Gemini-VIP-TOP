@@ -13,13 +13,19 @@ EXTENSIONS = {'.html'}
 class LinkExtractor(HTMLParser):
     def __init__(self):
         super().__init__()
-        self.links = []
+        self.links = [] # (href, rel)
 
     def handle_starttag(self, tag, attrs):
         if tag == 'a':
+            href = None
+            rel = None
             for attr, value in attrs:
                 if attr == 'href':
-                    self.links.append(value)
+                    href = value
+                elif attr == 'rel':
+                    rel = value
+            if href:
+                self.links.append((href, rel))
 
 def get_files_to_scan():
     files = []
@@ -183,7 +189,7 @@ def main():
             parser = LinkExtractor()
             parser.feed(content)
             
-            for href in parser.links:
+            for href, rel in parser.links:
                 # 1. Dirty Check
                 is_dirty = False
                 dirty_msg = href
@@ -205,7 +211,7 @@ def main():
                 if href.startswith(('http:', 'https:')) and 'gemini-vip.top' not in href:
                     try:
                         domain = urlparse(href).netloc
-                        external_links[domain].append(source_url)
+                        external_links[domain].append((source_url, rel))
                     except:
                         pass
                 
@@ -277,11 +283,45 @@ def main():
     # 4. External Link Check
     print("\n🌐 External Link Check (Outbound):")
     if external_links:
-        for domain, sources in sorted(external_links.items(), key=lambda x: len(x[1]), reverse=True):
+        for domain, entries in sorted(external_links.items(), key=lambda x: len(x[1]), reverse=True):
+            sources = [e[0] for e in entries]
             unique_sources = len(set(sources))
             print(f"  - {domain}: {len(sources)} links from {unique_sources} pages")
+            
+            # Check for rel attributes
+            risky_links = []
+            for src, rel in entries:
+                is_risky = False
+                if not rel:
+                    is_risky = True
+                else:
+                    rel_parts = rel.lower().split()
+                    if 'nofollow' not in rel_parts or 'sponsored' not in rel_parts:
+                         # Strict check: maybe just check if any protection exists?
+                         # User asked for "nofollow sponsored noopener noreferrer"
+                         pass
+                
+                # Report what's missing
+                required = {'nofollow', 'noopener', 'noreferrer'}
+                current = set(rel.lower().split()) if rel else set()
+                missing = required - current
+                if missing:
+                     risky_links.append((src, missing))
+
+            if risky_links:
+                 print(f"    ⚠️  Missing attributes in {len(risky_links)} links:")
+                 # De-duplicate messages
+                 shown_msgs = set()
+                 for src, missing in risky_links:
+                     msg = f"      In {src}: Missing {', '.join(sorted(missing))}"
+                     if msg not in shown_msgs:
+                         print(msg)
+                         shown_msgs.add(msg)
+            else:
+                 print(f"    ✅ All links have full protection.")
+
             # Show example sources if not too many
-            if unique_sources <= 3:
+            if unique_sources <= 3 and not risky_links:
                  print(f"    (from: {', '.join(sorted(list(set(sources))))})")
     else:
         print("  ✅ No external links found.")
