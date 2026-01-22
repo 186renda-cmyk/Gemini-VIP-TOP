@@ -55,10 +55,10 @@ def main():
     # XML
     urlset = ET.Element('urlset', xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
     static_pages = [
-        {'loc': f'{DOMAIN}/', 'priority': '1.0', 'changefreq': 'daily'},
+        {'loc': f'{DOMAIN}/', 'priority': '1.0', 'changefreq': 'weekly'},
         {'loc': f'{DOMAIN}/about', 'priority': '0.6', 'changefreq': 'monthly'},
         {'loc': f'{DOMAIN}/legal', 'priority': '0.5', 'changefreq': 'monthly'},
-        {'loc': f'{DOMAIN}/blog/', 'priority': '0.9', 'changefreq': 'daily'},
+        {'loc': f'{DOMAIN}/blog/', 'priority': '0.9', 'changefreq': 'weekly'},
         {'loc': f'{DOMAIN}/sitemap', 'priority': '0.4', 'changefreq': 'weekly'},
     ]
     for page in static_pages:
