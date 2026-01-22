@@ -177,7 +177,7 @@ def main():
     dirty_links = [] # (source_file, link)
     broken_links = [] # (source_url, target_url)
     external_links = defaultdict(list) # target_domain -> list(source_urls)
-    redirect_usage = defaultdict(set) # redirect_url -> set(source_urls)
+    redirect_usage = defaultdict(list) # redirect_url -> list((source_url, rel))
     
     # Scanning
     for f in files:
@@ -234,7 +234,7 @@ def main():
                     elif target_url in redirect_urls or target_url.rstrip('/') in redirect_urls:
                         # Valid redirect, treat as functional link
                         matched_redirect = target_url if target_url in redirect_urls else target_url.rstrip('/')
-                        redirect_usage[matched_redirect].add(source_url)
+                        redirect_usage[matched_redirect].append((source_url, rel))
                     else:
                         # Check if it looks like an internal link that failed to match
                         # We already filtered external links in normalize_link
@@ -326,14 +326,31 @@ def main():
     else:
         print("  ✅ No external links found.")
 
-    # 4.1 Redirect Usage Check (Link Equity)
+    # 4.1 Redirect Usage Check (Link Equity Leakage)
     print("\n🔀 Internal Redirect Usage (Link Equity Leakage):")
     if redirect_usage:
         print(f"  Found {len(redirect_usage)} internal redirects being used.")
-        for r_url, sources in sorted(redirect_usage.items()):
+        redirect_risks = []
+        
+        for r_url, entries in sorted(redirect_usage.items()):
             print(f"  - {r_url} is linked from:")
-            for s in sorted(sources):
-                print(f"    -> {s}")
+            for src, rel in entries:
+                print(f"    -> {src}")
+                
+                # Check for required attributes
+                required_redirect = {'nofollow', 'sponsored', 'noopener', 'noreferrer'}
+                current = set(rel.lower().split()) if rel else set()
+                missing = required_redirect - current
+                if missing:
+                    redirect_risks.append((src, r_url, missing))
+
+        if redirect_risks:
+             print(f"\n  ⚠️  Missing attributes in {len(redirect_risks)} redirect links (MUST have sponsored):")
+             for src, r_url, missing in redirect_risks:
+                 print(f"    In {src} -> {r_url}: Missing {', '.join(sorted(missing))}")
+        else:
+             print("\n  ✅ All redirect links have strict 'nofollow sponsored noopener noreferrer' protection.")
+
     else:
         print("  ✅ No internal links point to redirects.")
 
