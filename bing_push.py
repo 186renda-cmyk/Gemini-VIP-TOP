@@ -9,32 +9,30 @@ KEY_LOCATION = f"https://{HOST}/{KEY}.txt"
 API_URL = "https://api.indexnow.org/indexnow"
 
 def get_all_urls():
-    """扫描当前目录，生成所有需要提交的 URL"""
+    """从 sitemap.xml 提取所有 URL"""
     urls = []
     base_dir = os.path.dirname(os.path.abspath(__file__))
+    sitemap_path = os.path.join(base_dir, 'sitemap.xml')
     
-    # 1. 扫描根目录 HTML
-    for file in os.listdir(base_dir):
-        if file.endswith(".html") and file not in ["404.html", "design.html", "layout_template.html"]:
-            if file == "index.html":
-                urls.append(f"https://{HOST}/")
-            else:
-                # Clean URL: remove .html
-                clean_file = file.replace(".html", "")
-                urls.append(f"https://{HOST}/{clean_file}")
+    if not os.path.exists(sitemap_path):
+        print(f"❌ 错误: 找不到 sitemap.xml 文件: {sitemap_path}")
+        return []
     
-    # 2. 扫描 blog 目录
-    blog_dir = os.path.join(base_dir, "blog")
-    if os.path.exists(blog_dir):
-        for file in os.listdir(blog_dir):
-            if file.endswith(".html"):
-                # Clean URL: remove .html
-                clean_file = file.replace(".html", "")
-                if clean_file == "index":
-                    urls.append(f"https://{HOST}/blog/")
-                else:
-                    urls.append(f"https://{HOST}/blog/{clean_file}")
-    
+    try:
+        import re
+        with open(sitemap_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            # 提取 <loc> 标签内容
+            urls = re.findall(r'<loc>(.*?)</loc>', content)
+            # 过滤掉空白字符
+            urls = [url.strip() for url in urls if url.strip()]
+            
+            # 过滤掉 Google 验证文件 (以防万一 sitemap 中包含)
+            urls = [url for url in urls if "google" not in url.split('/')[-1]]
+            
+    except Exception as e:
+        print(f"❌ 解析 sitemap.xml 失败: {str(e)}")
+        
     return urls
 
 def push_to_bing(url_list):

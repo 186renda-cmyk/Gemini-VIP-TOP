@@ -294,14 +294,10 @@ def main():
                 is_risky = False
                 if not rel:
                     is_risky = True
-                else:
-                    rel_parts = rel.lower().split()
-                    if 'nofollow' not in rel_parts or 'sponsored' not in rel_parts:
-                         # Strict check: maybe just check if any protection exists?
-                         # User asked for "nofollow sponsored noopener noreferrer"
-                         pass
                 
                 # Report what's missing
+                # Standard External Links: MUST have nofollow, noopener, noreferrer
+                # Sponsored is optional (only for paid links), but if present, it's fine.
                 required = {'nofollow', 'noopener', 'noreferrer'}
                 current = set(rel.lower().split()) if rel else set()
                 missing = required - current
