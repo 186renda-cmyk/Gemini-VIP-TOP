@@ -50,6 +50,7 @@ POST_CONFIG = {
     'benefits': {'color': 'red', 'icon': 'fa-gift', 'category': '会员权益'},
     'gemini-region-error-fix': {'color': 'slate', 'icon': 'fa-wrench', 'category': '故障排除'},
     'gemini-subscription-error-fix': {'color': 'slate', 'icon': 'fa-circle-exclamation', 'category': '故障排除'},
+    'gemini-app-download': {'color': 'blue', 'icon': 'fa-download', 'category': '下载指南'},
     'guide-cn': {'color': 'teal', 'icon': 'fa-language', 'category': '中文指南'},
     'gemini-3-prompt-guide': {'color': 'purple', 'icon': 'fa-wand-magic-sparkles', 'category': 'Prompt教程'},
     'gemini-metaphysics-prompts': {'color': 'indigo', 'icon': 'fa-yin-yang', 'category': 'Prompt教程'},
