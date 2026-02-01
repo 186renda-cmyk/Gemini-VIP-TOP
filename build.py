@@ -45,6 +45,8 @@ POST_CONFIG = {
     'gemini-pro-prompts': {'color': 'purple', 'icon': 'fa-wand-magic-sparkles', 'category': 'Prompt教程'},
     'gemini-version-guide': {'color': 'blue', 'icon': 'fa-code-branch', 'category': '版本指南'},
     'gemini-membership-guide': {'color': 'orange', 'icon': 'fa-gem', 'category': '会员攻略'},
+    'gemini-registration-guide': {'color': 'cyan', 'icon': 'fa-user-plus', 'category': '新手教程'},
+    'gemini-shared-account-guide': {'color': 'orange', 'icon': 'fa-users', 'category': '会员攻略'},
     'how-to-use-gemini-3': {'color': 'indigo', 'icon': 'fa-book-open', 'category': '新手教程'},
     'gemini-veo-video-review': {'color': 'pink', 'icon': 'fa-video', 'category': '视频生成'},
     'benefits': {'color': 'red', 'icon': 'fa-gift', 'category': '会员权益'},

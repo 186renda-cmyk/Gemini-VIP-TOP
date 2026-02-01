@@ -18,12 +18,12 @@ INTENT_RULES = {
     '🆚 对比 (Competitor)': ['vs', 'alternative', 'better than', 'review', 'comparison', '对比', '替代', '好用', '评价']
 }
 
-# 停用词表
+# 停用词表 (用于生成右侧热词榜，不影响主表格显示)
 STOP_WORDS = {
     'for', 'to', 'in', 'on', 'with', 'the', 'a', 'an', 'of', 'and', 'or', 'is', 'are', 
     'how', 'what', 'where', 'why', 'download', 'free', '2024', '2025', '2026',
     'mac', 'windows', 'linux', 'android', 'ios', 'vs', 'apk', 'mod',
-    '教程', '下载', '怎么', '什么', '免费', '破解', '安装', '使用', 'cursor'
+    '教程', '下载', '怎么', '什么', '免费', '破解', '安装', '使用', 'cursor', 'grok', 'supergrok'
 }
 
 # ==========================================
@@ -35,10 +35,8 @@ def load_raw_data():
     data = []
     if os.path.exists(RAW_FILE):
         try:
-            with open(RAW_FILE, 'r', encoding='utf-8-sig') as f:
+            with open(RAW_FILE, 'r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
-                # Normalize headers just in case (strip whitespace)
-                reader.fieldnames = [name.strip() for name in reader.fieldnames] if reader.fieldnames else None
                 for row in reader:
                     data.append(row)
         except Exception as e:
@@ -57,7 +55,7 @@ def classify_keyword(keyword):
 def calculate_heat(keyword, raw_data_list):
     """计算热度分数 (1-5)"""
     mentions = [r for r in raw_data_list if r['Keyword'] == keyword]
-    sources = set(r.get('Source_Engine', '') for r in mentions)
+    sources = set(r.get('Source', '') for r in mentions)
     count = len(mentions)
     
     score = 1
@@ -74,7 +72,7 @@ def analyze_raw_data(data):
     
     # 1. 基础统计
     total_raw = len(data)
-    sources_count = collections.Counter(r.get('Source_Engine', 'Unknown') for r in data)
+    sources_count = collections.Counter(r.get('Source', 'Unknown') for r in data)
     
     # 2. 关键词聚合与热度计算
     unique_keywords = {}
@@ -89,7 +87,7 @@ def analyze_raw_data(data):
                 'Count': 0,
                 'Intent': classify_keyword(kw)
             }
-        unique_keywords[kw]['Sources'].add(row.get('Source_Engine', 'Unknown'))
+        unique_keywords[kw]['Sources'].add(row.get('Source', 'Unknown'))
         unique_keywords[kw]['Count'] += 1
 
     # 3. 处理列表
@@ -105,7 +103,7 @@ def analyze_raw_data(data):
         for intent in info['Intent']:
             intent_stats[intent] += 1
 
-    # 4. 排序
+    # 4. 排序 (按热度降序)
     processed_list.sort(key=lambda x: x['HeatScore'], reverse=True)
 
     # 5. 词频统计
@@ -124,13 +122,13 @@ def analyze_raw_data(data):
         'word_freq': word_freq,
         'money_keywords': [x for x in processed_list if any('搞钱' in i for i in x['Intent'])],
         'traffic_keywords': [x for x in processed_list if any('引流' in i for i in x['Intent'])],
-        'all_keywords': processed_list
+        'all_keywords': processed_list # 这里保留全量数据
     }
     
     return analysis
 
 def generate_html(analysis):
-    """生成全能版仪表盘"""
+    """生成全能版仪表盘 (无限制版)"""
     
     # 准备图表数据
     freq_labels = [x[0] for x in analysis['word_freq']]
@@ -152,13 +150,18 @@ def generate_html(analysis):
             <span class="badge bg-light text-dark">{count}</span>
         </button>
         """
+        
+    # 设置显示限制：虽然我们解除了限制，但为了防止浏览器崩溃，设置一个极高的安全上限 (比如 5000)
+    # 如果你的数据少于 5000，就会全部显示。
+    SHOW_LIMIT = 5000 
+    display_keywords = analysis['all_keywords'][:SHOW_LIMIT]
 
     html = f"""
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>SEO Master Dashboard</title>
+    <title>SEO Master Dashboard (Full View)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -184,7 +187,7 @@ def generate_html(analysis):
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold text-dark"><i class="fas fa-chart-line text-primary"></i> SEO 全景战情室</h2>
-            <p class="text-muted mb-0">Updated: {datetime.now().strftime('%Y-%m-%d %H:%M')} | Raw Data Analysis</p>
+            <p class="text-muted mb-0">Updated: {datetime.now().strftime('%Y-%m-%d %H:%M')} | <span class="badge bg-success">Full Data View</span></p>
         </div>
         <button onclick="window.print()" class="btn btn-outline-secondary btn-sm"><i class="fas fa-print"></i> 打印报告</button>
     </div>
@@ -199,8 +202,8 @@ def generate_html(analysis):
         </div>
         <div class="col-md-3">
             <div class="card kpi-card bg-danger text-white h-100 p-3">
-                <h6 class="text-uppercase mb-2" style="opacity:0.9">高热度词 (High Heat)</h6>
-                <h2 class="display-6 fw-bold mb-0">{analysis['high_heat_count']}</h2>
+                <h6 class="text-uppercase mb-2" style="opacity:0.9">去重后总数 (Unique)</h6>
+                <h2 class="display-6 fw-bold mb-0">{analysis['unique_total']}</h2>
                 <i class="fas fa-fire kpi-icon text-white"></i>
             </div>
         </div>
@@ -226,9 +229,7 @@ def generate_html(analysis):
             <div class="card h-100">
                 <div class="card-body">
                     <h6 class="card-title text-muted mb-3"><i class="fas fa-poll"></i> 市场热点雷达 (Top 20)</h6>
-                    <div class="chart-container">
-                        <canvas id="freqChart"></canvas>
-                    </div>
+                    <div class="chart-container"><canvas id="freqChart"></canvas></div>
                 </div>
             </div>
         </div>
@@ -236,19 +237,15 @@ def generate_html(analysis):
             <div class="card h-100">
                 <div class="card-body">
                     <h6 class="card-title text-muted mb-3"><i class="fas fa-pie-chart"></i> 搜索意图分布</h6>
-                    <div class="chart-container">
-                        <canvas id="intentChart"></canvas>
-                    </div>
+                    <div class="chart-container"><canvas id="intentChart"></canvas></div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card h-100">
                 <div class="card-body">
-                    <h6 class="card-title text-muted mb-3"><i class="fas fa-server"></i> 渠道贡献 (G vs B)</h6>
-                    <div class="chart-container">
-                        <canvas id="sourceChart"></canvas>
-                    </div>
+                    <h6 class="card-title text-muted mb-3"><i class="fas fa-server"></i> 渠道贡献</h6>
+                    <div class="chart-container"><canvas id="sourceChart"></canvas></div>
                 </div>
             </div>
         </div>
@@ -258,9 +255,7 @@ def generate_html(analysis):
     <div class="row g-3">
         <div class="col-md-6">
             <div class="card h-100 border-success border-top border-3">
-                <div class="card-header bg-white border-0 fw-bold text-success d-flex justify-content-between">
-                    <span><i class="fas fa-money-bill-wave"></i> 搞钱词 Top 10</span>
-                </div>
+                <div class="card-header bg-white border-0 fw-bold text-success"><span><i class="fas fa-money-bill-wave"></i> 搞钱词 Top 10</span></div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0 text-nowrap">
                         <thead class="table-light"><tr><th>热度</th><th>关键词</th><th class="text-end">调研</th></tr></thead>
@@ -282,9 +277,7 @@ def generate_html(analysis):
         </div>
         <div class="col-md-6">
             <div class="card h-100 border-primary border-top border-3">
-                <div class="card-header bg-white border-0 fw-bold text-primary d-flex justify-content-between">
-                    <span><i class="fas fa-users"></i> 引流词 Top 10</span>
-                </div>
+                <div class="card-header bg-white border-0 fw-bold text-primary"><span><i class="fas fa-users"></i> 引流词 Top 10</span></div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0 text-nowrap">
                         <thead class="table-light"><tr><th>热度</th><th>关键词</th><th class="text-end">调研</th></tr></thead>
@@ -315,7 +308,7 @@ def generate_html(analysis):
                     <input type="text" id="tableSearch" class="form-control form-control-sm w-25" placeholder="🔍 搜索...">
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                    <div class="table-responsive" style="max-height: 800px; overflow-y: auto;">
                         <table class="table table-sm table-hover align-middle mb-0" id="mainTable">
                             <thead class="table-light sticky-top">
                                 <tr>
@@ -337,10 +330,12 @@ def generate_html(analysis):
                                         <a href="https://www.xiaohongshu.com/search_result?keyword={r['Keyword']}" target="_blank" class="search-btn xhs-color"><i class="fas fa-book"></i></a>
                                     </td>
                                 </tr>
-                                ''' for r in analysis['all_keywords'][:400]])} 
+                                ''' for r in display_keywords])} 
                             </tbody>
                         </table>
-                        <div class="p-2 text-center text-muted small">仅展示前 400 条高热度数据</div>
+                        <div class="p-2 text-center text-muted small">
+                            当前展示了 {len(display_keywords)} 条数据 (Total Available: {analysis['unique_total']})
+                        </div>
                     </div>
                 </div>
             </div>
@@ -348,7 +343,7 @@ def generate_html(analysis):
         <div class="col-md-3">
             <div class="card h-100">
                 <div class="card-header bg-white border-0 fw-bold small">📌 点击筛选热词</div>
-                <div class="card-body p-0" style="max-height: 540px; overflow-y: auto;">
+                <div class="card-body p-0" style="max-height: 800px; overflow-y: auto;">
                     <div class="list-group list-group-flush small">
                         {top_roots_html}
                     </div>
@@ -361,48 +356,26 @@ def generate_html(analysis):
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // 1. Frequency Bar Chart
+    // Charts Config
     new Chart(document.getElementById('freqChart'), {{
         type: 'bar',
-        data: {{
-            labels: {freq_labels},
-            datasets: [{{
-                label: '提及频次',
-                data: {freq_values},
-                backgroundColor: '#6c5ce7',
-                borderRadius: 4
-            }}]
-        }},
+        data: {{ labels: {freq_labels}, datasets: [{{ label: '提及频次', data: {freq_values}, backgroundColor: '#6c5ce7', borderRadius: 4 }}] }},
         options: {{ responsive: true, maintainAspectRatio: false, plugins: {{ legend: {{ display: false }} }} }}
     }});
 
-    // 2. Intent Doughnut Chart
     new Chart(document.getElementById('intentChart'), {{
         type: 'doughnut',
-        data: {{
-            labels: {intent_labels},
-            datasets: [{{
-                data: {intent_values},
-                backgroundColor: ['#00b894', '#0984e3', '#636e72', '#fdcb6e']
-            }}]
-        }},
+        data: {{ labels: {intent_labels}, datasets: [{{ data: {intent_values}, backgroundColor: ['#00b894', '#0984e3', '#636e72', '#fdcb6e'] }}] }},
         options: {{ responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: {{ legend: {{ position: 'right' }} }} }}
     }});
 
-    // 3. Source Pie Chart (New!)
     new Chart(document.getElementById('sourceChart'), {{
         type: 'pie',
-        data: {{
-            labels: {source_labels},
-            datasets: [{{
-                data: {source_values},
-                backgroundColor: ['#4285F4', '#00a4ef', '#EA4335']
-            }}]
-        }},
+        data: {{ labels: {source_labels}, datasets: [{{ data: {source_values}, backgroundColor: ['#4285F4', '#00a4ef', '#EA4335'] }}] }},
         options: {{ responsive: true, maintainAspectRatio: false, plugins: {{ legend: {{ position: 'bottom' }} }} }}
     }});
 
-    // Table Filter Logic
+    // Filter Logic
     const searchInput = document.getElementById('tableSearch');
     const table = document.getElementById('mainTable');
     const trs = table.getElementsByTagName('tr');
@@ -411,7 +384,7 @@ def generate_html(analysis):
         searchInput.value = query;
         const filter = query.toLowerCase();
         for (let i = 1; i < trs.length; i++) {{
-            const td = trs[i].getElementsByTagName('td')[1]; // Keyword col
+            const td = trs[i].getElementsByTagName('td')[1];
             if (td) {{
                 const txtValue = td.textContent || td.innerText;
                 trs[i].style.display = txtValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
@@ -419,7 +392,6 @@ def generate_html(analysis):
         }}
         table.scrollIntoView({{behavior: "smooth"}});
     }}
-
     searchInput.addEventListener('keyup', function() {{ filterTable(this.value); }});
 </script>
 </body>
@@ -430,9 +402,6 @@ def generate_html(analysis):
         f.write(html)
     print(f"✅ Dashboard generated successfully: {REPORT_FILE}")
 
-# ==========================================
-# 🚀 主程序
-# ==========================================
 def main():
     raw_data = load_raw_data()
     if not raw_data:

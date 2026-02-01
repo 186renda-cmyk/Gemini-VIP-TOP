@@ -1,4 +1,0 @@
-requests
-fake_useragent
-tqdm
-pandas
