@@ -61,6 +61,7 @@ POST_CONFIG = {
     'gemini-api-key-guide': {'color': 'cyan', 'icon': 'fa-key', 'category': 'API教程'},
     'gemini-generative-ui-guide': {'color': 'pink', 'icon': 'fa-palette', 'category': '新功能'},
     'choose-model-cn': {'color': 'violet', 'icon': 'fa-robot', 'category': '模型选型'},
+    'gemini-vs-chatgpt-vs-grok': {'color': 'yellow', 'icon': 'fa-scale-balanced', 'category': '竞品对比'},
     'comparison': {'color': 'yellow', 'icon': 'fa-not-equal', 'category': '竞品对比'},
     'pro-vs-free': {'color': 'green', 'icon': 'fa-circle-half-stroke', 'category': '版本对比'}
 }
