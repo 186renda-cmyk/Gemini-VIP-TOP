@@ -13,19 +13,44 @@ EXTENSIONS = {'.html'}
 class LinkExtractor(HTMLParser):
     def __init__(self):
         super().__init__()
-        self.links = [] # (href, rel)
+        self.links = [] # (href, rel, text, classes)
+        self.current_link = None
 
     def handle_starttag(self, tag, attrs):
         if tag == 'a':
             href = None
             rel = None
+            classes = set()
             for attr, value in attrs:
                 if attr == 'href':
                     href = value
                 elif attr == 'rel':
                     rel = value
+                elif attr == 'class':
+                    classes = set(value.split())
+            
             if href:
-                self.links.append((href, rel))
+                self.current_link = {
+                    'href': href,
+                    'rel': rel,
+                    'classes': classes,
+                    'text': []
+                }
+
+    def handle_data(self, data):
+        if self.current_link is not None:
+            self.current_link['text'].append(data)
+
+    def handle_endtag(self, tag):
+        if tag == 'a' and self.current_link is not None:
+            full_text = ''.join(self.current_link['text']).strip()
+            self.links.append((
+                self.current_link['href'],
+                self.current_link['rel'],
+                full_text,
+                self.current_link['classes']
+            ))
+            self.current_link = None
 
 def get_files_to_scan():
     files = []
@@ -178,6 +203,7 @@ def main():
     broken_links = [] # (source_url, target_url)
     external_links = defaultdict(list) # target_domain -> list(source_urls)
     redirect_usage = defaultdict(list) # redirect_url -> list((source_url, rel))
+    pyramid_violations = [] # (source_file, link_text, href)
     
     # Scanning
     for f in files:
@@ -189,7 +215,7 @@ def main():
             parser = LinkExtractor()
             parser.feed(content)
             
-            for href, rel in parser.links:
+            for href, rel, text, classes in parser.links:
                 # 1. Dirty Check
                 is_dirty = False
                 dirty_msg = href
@@ -205,7 +231,44 @@ def main():
                 if is_dirty:
                     dirty_links.append((os.path.basename(f), dirty_msg))
                 
-                # 2. Build Graph
+                # 2. Pyramid Model Check (Sales CTA Integrity)
+                # Only check article pages (in /blog/)
+                if '/blog/' in source_url:
+                    is_sales_cta = False
+                    # Check text keywords
+                    keywords = ['立即开通', '购买', 'Get Started', 'Subscribe', '立即获取', '开通会员']
+                    
+                    # 1. Sidebar Sales Card Button (Specific Class)
+                    if 'group/btn' in classes:
+                         is_sales_cta = True
+                    
+                    # 2. Inline CTA Buttons (Style + Keywords)
+                    # Usually bg-blue-600 or bg-gradient-to-r with white text
+                    elif ('bg-blue-600' in classes or 'bg-gradient-to-r' in classes) and 'text-white' in classes:
+                        if any(k in text for k in keywords):
+                             is_sales_cta = True
+                    
+                    if is_sales_cta:
+                        # Check destination
+                        # Allowed: /#pricing, /#features, /, https://gemini-vip.top/#...
+                        # We want to ensure it goes to homepage.
+                        
+                        # Normalize first
+                        norm_href = href.strip()
+                        
+                        is_valid_dest = False
+                        if norm_href == '/' or norm_href.startswith('/#') or norm_href.startswith('#'):
+                            is_valid_dest = True
+                        elif 'gemini-vip.top' in norm_href:
+                             # absolute url to homepage
+                             path = urlparse(norm_href).path
+                             if path == '/' or path == '':
+                                 is_valid_dest = True
+                        
+                        if not is_valid_dest:
+                            pyramid_violations.append((source_url, text[:30], href))
+
+                # 3. Build Graph
                 
                 # Check for External Links First
                 if href.startswith(('http:', 'https:')) and 'gemini-vip.top' not in href:
@@ -350,6 +413,16 @@ def main():
     else:
         print("  ✅ No internal links point to redirects.")
 
+    # 4.2 Pyramid Model Check
+    print("\n🔺 Pyramid Model Check (Sales CTA Integrity):")
+    if pyramid_violations:
+        print(f"  ⚠️ Found {len(pyramid_violations)} Sales CTAs that do NOT point to Homepage Sales Card:")
+        for src, txt, link in pyramid_violations:
+            print(f"    - In {src}: \"{txt}\" -> {link}")
+    else:
+        print("  ✅ All Sales CTAs correctly point to Homepage Sales Card (Pyramid Model enforced).")
+
+
     # 5. Top Pages by In-links (Show ALL)
     print("\n📊 Page Connectivity Report (In-links Count):")
     sorted_pages = sorted(in_links.items(), key=lambda x: len(x[1]), reverse=True)
@@ -475,6 +548,12 @@ def main():
         points = len(not_scanned) * 5
         score -= points
         deductions.append(f"-{points} pts: {len(not_scanned)} Sitemap URLs not found on disk (High Impact)")
+
+    # 6. Pyramid Violations
+    if pyramid_violations:
+        points = len(pyramid_violations) * 5
+        score -= points
+        deductions.append(f"-{points} pts: {len(pyramid_violations)} Pyramid Model Violations (High Impact)")
 
     # Cap score
     score = max(0, score)
