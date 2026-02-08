@@ -51,6 +51,7 @@ POST_CONFIG = {
     'gemini-shared-account-guide': {'color': 'orange', 'icon': 'fa-users', 'category': '会员攻略'},
     'how-to-use-gemini-3': {'color': 'indigo', 'icon': 'fa-book-open', 'category': '新手教程'},
     'gemini-veo-video-review': {'color': 'pink', 'icon': 'fa-video', 'category': '视频生成'},
+    'gemini-image-generator-guide': {'color': 'pink', 'icon': 'fa-palette', 'category': 'AI绘图'},
     'benefits': {'color': 'red', 'icon': 'fa-gift', 'category': '会员权益'},
     'gemini-region-error-fix': {'color': 'slate', 'icon': 'fa-wrench', 'category': '故障排除'},
     'gemini-subscription-error-fix': {'color': 'slate', 'icon': 'fa-circle-exclamation', 'category': '故障排除'},
@@ -60,6 +61,7 @@ POST_CONFIG = {
     'gemini-metaphysics-prompts': {'color': 'indigo', 'icon': 'fa-yin-yang', 'category': 'Prompt教程'},
     'gemini-ppt-prompts': {'color': 'pink', 'icon': 'fa-file-powerpoint', 'category': 'Prompt教程'},
     'gemini-api-key-guide': {'color': 'cyan', 'icon': 'fa-key', 'category': 'API教程'},
+    'gemini-quota-guide': {'color': 'cyan', 'icon': 'fa-chart-pie', 'category': 'API教程'},
     'gemini-generative-ui-guide': {'color': 'pink', 'icon': 'fa-palette', 'category': '新功能'},
     'choose-model-cn': {'color': 'violet', 'icon': 'fa-robot', 'category': '模型选型'},
     'gemini-vs-chatgpt-vs-grok': {'color': 'yellow', 'icon': 'fa-scale-balanced', 'category': '竞品对比'},
@@ -277,6 +279,138 @@ def update_indices():
     print("Updating indices...")
     update_sitemap.main()
 
+def optimize_sales_card(soup):
+    """
+    Optimizes the sidebar sales card to be more compact.
+    """
+    # Find the sales card by its unique title
+    card_title = soup.find('h3', string=re.compile('Gemini 3.0 Pro 成品号'))
+    if not card_title:
+        return soup
+    
+    # Go up to the container (h3 -> div -> div)
+    # The structure is: div > div > h3
+    card_container = card_title.parent
+    if not card_container:
+        return soup
+    
+    # The main container is the parent of the card_container
+    # <div class="relative bg-[#0B0F19] ...">
+    main_container = card_container
+    if 'bg-[#0B0F19]' not in str(main_container.get('class', [])):
+         # Try one level up if we didn't hit the bg container
+         main_container = card_container.parent
+
+    if not main_container or 'bg-[#0B0F19]' not in str(main_container.get('class', [])):
+        # Fallback: find by class if traversal failed
+        main_container = soup.find('div', class_=lambda c: c and 'bg-[#0B0F19]' in c and 'p-6' in c)
+    
+    if not main_container:
+        return soup
+
+    # 1. Reduce Padding of the main container (p-6 -> p-4)
+    if main_container.has_attr('class'):
+        # Using p-4 (16px) instead of p-5 (20px) to save space
+        main_container['class'] = [c.replace('p-6', 'p-4') for c in main_container['class']]
+
+    # 2. Optimize Header (Badge Row)
+    # Select by unique combination of classes
+    badge_row = main_container.select_one('.flex.justify-between.items-center')
+    if badge_row and badge_row.has_attr('class'):
+        badge_row['class'] = [c.replace('mb-6', 'mb-2') for c in badge_row['class']]
+
+    # 3. Optimize Icon Container
+    # Find the div that has h-32
+    icon_container = main_container.find('div', class_=lambda c: c and 'h-32' in c)
+    if icon_container and icon_container.has_attr('class'):
+        # h-32 -> h-14, mb-6 -> mb-2
+        new_classes = []
+        for c in icon_container['class']:
+            if c == 'h-32': new_classes.append('h-14')
+            elif c == 'mb-6': new_classes.append('mb-2')
+            else: new_classes.append(c)
+        icon_container['class'] = new_classes
+        
+        # Optimize Icon Size (text-5xl -> text-2xl)
+        icon = icon_container.find('i')
+        if icon and icon.has_attr('class'):
+             icon['class'] = [c.replace('text-5xl', 'text-2xl') for c in icon['class']]
+
+    # 4. Optimize Subtitle (mb-6 -> mb-2, pb-4 -> pb-2)
+    subtitle = main_container.find('p', class_=lambda c: c and 'text-xs' in c and 'border-b' in c)
+    if subtitle and subtitle.has_attr('class'):
+        new_classes = []
+        for c in subtitle['class']:
+            if c == 'mb-6': new_classes.append('mb-2')
+            elif c == 'pb-4': new_classes.append('pb-2')
+            else: new_classes.append(c)
+        subtitle['class'] = new_classes
+
+    # 5. Optimize Price Area (mb-6 -> mb-2)
+    price_area = main_container.select_one('.flex.items-end.justify-between')
+    if price_area and price_area.has_attr('class'):
+        price_area['class'] = [c.replace('mb-6', 'mb-2') for c in price_area['class']]
+        
+        # Optional: Make price slightly smaller if needed (e.g. text-3xl -> text-2xl)
+        # But keeping it big is good for sales. The margins save enough space.
+        price_text = price_area.find('div', class_=lambda c: c and 'text-3xl' in c)
+        if price_text and price_text.has_attr('class'):
+             price_text['class'] = [c.replace('text-3xl', 'text-2xl') for c in price_text['class']]
+
+    # 6. Optimize Features List (mb-6 -> mb-2, space-y-3 -> space-y-2)
+    features = main_container.find('ul', class_=lambda c: c and 'space-y-3' in c)
+    if features and features.has_attr('class'):
+        new_classes = []
+        for c in features['class']:
+            if c == 'mb-6': new_classes.append('mb-2')
+            elif c == 'space-y-3': new_classes.append('space-y-2')
+            else: new_classes.append(c)
+        features['class'] = new_classes
+
+    # 7. Optimize Copy Code (mb-6 -> mb-2)
+    copy_code = main_container.find('div', onclick=True)
+    if copy_code and copy_code.has_attr('class'):
+        copy_code['class'] = [c.replace('mb-6', 'mb-2') for c in copy_code['class']]
+        
+    # 8. Optimize CTA Button (py-3.5 -> py-3)
+    cta_btn = main_container.find('a', href='/#pricing')
+    if cta_btn and cta_btn.has_attr('class'):
+        cta_btn['class'] = [c.replace('py-3.5', 'py-3') for c in cta_btn['class']]
+
+    # 9. Optimize Guarantee Text (mt-4 -> mt-3)
+    guarantee = main_container.find('div', class_=lambda c: c and 'mt-4' in c and 'text-center' in c)
+    if guarantee and guarantee.has_attr('class'):
+        guarantee['class'] = [c.replace('mt-4', 'mt-3') for c in guarantee['class']]
+
+    # 10. Optimize Sticky Container Position (Breathing Room)
+    # Find the parent sticky container
+    # Traverse up to find the sticky container
+    sticky_container = main_container
+    found_sticky = False
+    for _ in range(3): # Try going up 3 levels
+        if sticky_container and sticky_container.parent:
+            sticky_container = sticky_container.parent
+            if sticky_container.has_attr('class') and 'sticky' in str(sticky_container['class']):
+                found_sticky = True
+                break
+    
+    if found_sticky:
+        new_sticky_classes = []
+        for c in sticky_container['class']:
+            # top-24 -> top-32 (Avoid touching header on scroll)
+            # Revert to top-24 for better vertical space usage
+            if c == 'top-24': new_sticky_classes.append('top-32') 
+            elif c == 'top-32': new_sticky_classes.append('top-32')
+            else: new_sticky_classes.append(c)
+        
+        # Add mt-12 if not present (Initial breathing room)
+        if 'mt-12' not in new_sticky_classes:
+            new_sticky_classes.append('mt-12')
+            
+        sticky_container['class'] = new_sticky_classes
+
+    return soup
+
 def process_file(filepath, template_content, all_posts):
     print(f"Processing file: {filepath}")
     try:
@@ -298,6 +432,10 @@ def process_file(filepath, template_content, all_posts):
         main_content_raw = match.group(1)
         soup = BeautifulSoup(main_content_raw, 'html.parser')
         print(f"DEBUG: Soup parsed for {filepath}")
+        
+        # --- Optimize Sales Card ---
+        soup = optimize_sales_card(soup)
+        
     except Exception as e:
         print(f"Error parsing soup for {filepath}: {e}")
         return
