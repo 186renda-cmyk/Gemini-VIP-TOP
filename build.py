@@ -52,6 +52,8 @@ POST_CONFIG = {
     'how-to-use-gemini-3': {'color': 'indigo', 'icon': 'fa-book-open', 'category': '新手教程'},
     'gemini-veo-video-review': {'color': 'pink', 'icon': 'fa-video', 'category': '视频生成'},
     'gemini-image-generator-guide': {'color': 'pink', 'icon': 'fa-palette', 'category': 'AI绘图'},
+    'gemini-banana-guide': {'color': 'yellow', 'icon': 'fa-palette', 'category': 'AI绘图'},
+    'gemini-balance-guide': {'color': 'emerald', 'icon': 'fa-server', 'category': 'API教程'},
     'benefits': {'color': 'red', 'icon': 'fa-gift', 'category': '会员权益'},
     'gemini-region-error-fix': {'color': 'slate', 'icon': 'fa-wrench', 'category': '故障排除'},
     'gemini-subscription-error-fix': {'color': 'slate', 'icon': 'fa-circle-exclamation', 'category': '故障排除'},
@@ -163,6 +165,9 @@ def get_post_metadata(filepath):
         'summary': summary
     }
 
+# Global state to track recommendation frequency for SEO balancing
+INCOMING_LINK_COUNTS = {}
+
 def get_related_posts(current_post, all_posts):
     # Filter out current post
     candidates = [p for p in all_posts if p['url'] != current_post['url']]
@@ -173,17 +178,56 @@ def get_related_posts(current_post, all_posts):
     for p in candidates:
         other_tags = set(p['tags'])
         overlap = len(current_tags.intersection(other_tags))
+        
+        # Initialize count if not exists
+        if p['url'] not in INCOMING_LINK_COUNTS:
+            INCOMING_LINK_COUNTS[p['url']] = 0
+            
         scored_candidates.append({
             'post': p,
             'overlap': overlap
         })
     
-    # Sort by overlap (desc), then date (desc)
-    scored_candidates.sort(key=lambda x: x['post']['date'], reverse=True)
-    scored_candidates.sort(key=lambda x: x['overlap'], reverse=True)
+    # Intelligent SEO Sorting Strategy:
+    # 1. Relevance (Overlap): High overlap is still the most important factor.
+    # 2. Balance (Incoming Links): If overlap is same, prioritize posts with FEWER incoming links.
+    #    This ensures "wealth distribution" so new or niche posts get visibility.
+    # 3. Freshness (Date): If everything else is equal, prefer newer content.
+    # 4. Randomness: Add a tiny bit of random shuffle for same-score items to avoid static patterns? 
+    #    (Python's sort is stable, so we rely on the keys)
     
-    # Return top 4 posts
-    return [x['post'] for x in scored_candidates[:4]]
+    scored_candidates.sort(key=lambda x: (
+        x['overlap'],                       # Primary: Relevance
+        -INCOMING_LINK_COUNTS[x['post']['url']], # Secondary: Balance (Less links = Higher priority? Wait, we want fewer links to be higher. So negative count is bad? No.)
+        # Sort is ascending by default? No, we used reverse=True before.
+        # Let's standardize to reverse=True (Descending score).
+        # We want: Higher Overlap -> Higher Score
+        # We want: Lower Link Count -> Higher Score
+        # We want: Newer Date -> Higher Score
+        x['post']['date']
+    ), reverse=True)
+    
+    # Wait, the logic above for Link Count is tricky with reverse=True.
+    # If reverse=True:
+    #   Overlap 3 > Overlap 1 (Good)
+    #   Link Count 5 vs Link Count 20. We want 5 to be picked.
+    #   If we use -Count: -5 > -20. So -Count works with reverse=True.
+    
+    # Refined Sort Key:
+    scored_candidates.sort(key=lambda x: (
+        x['overlap'],                               # 1. Relevance (High is good)
+        -INCOMING_LINK_COUNTS[x['post']['url']],    # 2. Balance (Low count -> High negative number? No. Low count 0 -> 0. High count 10 -> -10. 0 > -10. So Yes, -Count works.)
+        x['post']['date']                           # 3. Freshness (Newer is string-larger usually)
+    ), reverse=True)
+    
+    # Select top 4
+    selected = [x['post'] for x in scored_candidates[:4]]
+    
+    # Update global counts
+    for p in selected:
+        INCOMING_LINK_COUNTS[p['url']] += 1
+        
+    return selected
 
 def generate_related_posts_html(related_posts, style_db):
     if not related_posts:
