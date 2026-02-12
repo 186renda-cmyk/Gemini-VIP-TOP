@@ -54,6 +54,7 @@ POST_CONFIG = {
     'gemini-image-generator-guide': {'color': 'pink', 'icon': 'fa-palette', 'category': 'AI绘图'},
     'gemini-banana-guide': {'color': 'yellow', 'icon': 'fa-palette', 'category': 'AI绘图'},
     'gemini-balance-guide': {'color': 'emerald', 'icon': 'fa-server', 'category': 'API教程'},
+    'gemini-live-guide': {'color': 'red', 'icon': 'fa-microphone-lines', 'category': '新功能'},
     'benefits': {'color': 'red', 'icon': 'fa-gift', 'category': '会员权益'},
     'gemini-region-error-fix': {'color': 'slate', 'icon': 'fa-wrench', 'category': '故障排除'},
     'gemini-subscription-error-fix': {'color': 'slate', 'icon': 'fa-circle-exclamation', 'category': '故障排除'},
